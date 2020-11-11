@@ -4,8 +4,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import BasePermission
 from rest_framework.permissions import IsAuthenticated
 
-from api.serializers import PostSerializer, CommentSerializer, FollowSerializer
-from .models import Post, Comment, Follow
+from api.serializers import PostSerializer, CommentSerializer, FollowSerializer, GroupSerializer
+from .models import Post, Comment, Follow, Group
 
 
 class IsOwnerOrReadOnly(BasePermission):
@@ -36,14 +36,18 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Comment.objects.all().filter(post_id=self.kwargs['post_id'])
 
+
 class FollowViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
     serializer_class = FollowSerializer
 
     def perform_create(self, serializer):
-        post = get_object_or_404(Post, pk=self.kwargs['post_id'])
-        serializer.save(author=self.request.user,
-                        post_id=self.kwargs['post_id'])
+        serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        return Follow.objects.all().filter(post_id=self.kwargs['post_id'])
+        return Follow.objects.all().filter(user=self.request.user)
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
+    serializer_class = GroupSerializer
