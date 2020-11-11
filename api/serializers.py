@@ -21,13 +21,17 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class FollowSerializer(serializers.ModelSerializer):
     # user = serializers.ReadOnlyField(source='user.username')
+    # following = serializers.ReadOnlyField(source='user.username')
+    user = serializers.SlugRelatedField(slug_field='username', read_only=True)
+    following = serializers.SlugRelatedField(slug_field='username',  read_only=True)
+
 
     class Meta:
-        fields = ('user', 'following')
+        fields = ('user', 'following',)
         model = Follow
 
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = 'title'
+        fields = ('title', 'id')
         model = Group
