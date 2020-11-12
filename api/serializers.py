@@ -35,7 +35,6 @@ class FollowSerializer(serializers.ModelSerializer):
     )
 
     def validate(self, data):
-        # print(str(data.get('following')) + '  ' + str(self.user))
         if data.get('following') == self.context['request'].user:
             raise serializers.ValidationError(f'Follower shouldn\'t follow by oneself')
         return data
