@@ -1,8 +1,8 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, mixins
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import BasePermission
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from api.serializers import PostSerializer, CommentSerializer, FollowSerializer, GroupSerializer
 from .models import Post, Comment, Follow, Group
@@ -27,7 +27,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     serializer_class = CommentSerializer
 
     def perform_create(self, serializer):
@@ -39,7 +39,9 @@ class CommentViewSet(viewsets.ModelViewSet):
         return Comment.objects.all().filter(post_id=self.kwargs['post_id'])
 
 
-class FollowViewSet(viewsets.ModelViewSet):
+class FollowViewSet(mixins.CreateModelMixin,
+                    mixins.ListModelMixin,
+                    viewsets.GenericViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     serializer_class = FollowSerializer
     queryset = Follow.objects.all()
@@ -50,7 +52,9 @@ class FollowViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class GroupViewSet(viewsets.ModelViewSet):
+class GroupViewSet(mixins.CreateModelMixin,
+                   mixins.ListModelMixin,
+                   viewsets.GenericViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     serializer_class = GroupSerializer
     queryset = Group.objects.all()

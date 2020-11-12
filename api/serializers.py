@@ -4,7 +4,9 @@ from .models import Post, Comment, Follow, Group, User
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True)
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
@@ -12,7 +14,9 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True)
 
     class Meta:
         fields = ('id', 'author', 'post', 'text', 'created')
@@ -29,6 +33,12 @@ class FollowSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(),
         slug_field='username'
     )
+
+    def validate(self, data):
+        # print(str(data.get('following')) + '  ' + str(self.user))
+        if data.get('following') == self.context['request'].user:
+            raise serializers.ValidationError(f'Follower shouldn\'t follow by oneself')
+        return data
 
     class Meta:
         fields = '__all__'
